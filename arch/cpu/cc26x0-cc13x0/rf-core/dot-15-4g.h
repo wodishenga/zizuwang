@@ -63,7 +63,7 @@
 #define DOT_15_4G_FREQUENCY_BAND_950     11 /* 950–958 (Japan) - 950 MHz band */
 #define DOT_15_4G_FREQUENCY_BAND_1427    12 /* 1427–1518 (US and Canada, non-contiguous) - 1427 MHz band */
 #define DOT_15_4G_FREQUENCY_BAND_2450    13 /* 2400–2483.5 2450 MHz band */
-#define DOT_15_4G_FREQUENCY_BAND_CUSTOM  14 /* For use with custom frequency band settings */
+#define DOT_15_4G_FREQUENCY_BAND_433     14 /* For use with custom frequency band settings */
 /*---------------------------------------------------------------------------*/
 /* Default band selection to band 4 - 863MHz */
 #ifdef DOT_15_4G_CONF_FREQUENCY_BAND_ID
