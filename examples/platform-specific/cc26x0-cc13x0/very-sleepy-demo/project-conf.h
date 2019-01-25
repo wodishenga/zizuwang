@@ -30,10 +30,16 @@
 /*---------------------------------------------------------------------------*/
 #ifndef PROJECT_CONF_H_
 #define PROJECT_CONF_H_
+
+
+//#define ENERGEST_CONF_ON 0
+
 /*---------------------------------------------------------------------------*/
 /* Change to match your configuration */
-#define IEEE802154_CONF_PANID            0xABCD
-#define IEEE802154_CONF_DEFAULT_CHANNEL      25
+#define IEEE802154_CONF_PANID            0xbbbb
+#define IEEE802154_CONF_DEFAULT_CHANNEL      1
+
+#define RPL_CONF_DEFAULT_LIFETIME 10
 /*---------------------------------------------------------------------------*/
 /* Enable the ROM bootloader */
 #define CCXXWARE_CONF_ROM_BOOTLOADER_ENABLE   1
@@ -42,13 +48,24 @@
 #define RF_BLE_CONF_ENABLED                   0
 #define UIP_DS6_CONF_PERIOD        CLOCK_SECOND
 #define UIP_CONF_TCP                          0
-#define RPL_CONF_LEAF_ONLY                    1
+#define RPL_CONF_DEFAULT_LEAF_ONLY            1
+//#define RPL_CONF_LEAF_ONLY                    1
+#define LOG_CONF_WITH_LOC 1
+
+#define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_TCPIP                       LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_IPV6                        LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_6LOWPAN                     LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_MAC                         LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_FRAMER                      LOG_LEVEL_INFO
+
 
 /*
  * We'll fail without RPL probing, so turn it on explicitly even though it's
  * on by default
  */
 #define RPL_CONF_WITH_PROBING                 1
+#define RPL_CONF_WITH_DAO_ACK                 0
 /*---------------------------------------------------------------------------*/
 #endif /* PROJECT_CONF_H_ */
 /*---------------------------------------------------------------------------*/
