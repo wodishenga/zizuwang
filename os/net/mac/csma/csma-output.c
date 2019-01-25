@@ -252,15 +252,7 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
   }
   packet_sent(n, q, ret, 1);
 #if RPL_CONF_DEFAULT_LEAF_ONLY
-  if(is_waiting_downward()==0)
-  {
-      NETSTACK_RADIO.off();
-  }
-  else
-  {
-	  NETSTACK_RADIO.off();
-	  NETSTACK_RADIO.on();
-  }
+  NETSTACK_RADIO.off();
 #endif
   return last_sent_ok;
 }
