@@ -1,6 +1,0 @@
-route links
-links:fd00::212:4b00:17ae:ee14  (DODAG root) (lifetime: infinite)
-links:fd00::212:4b00:17b0:fb97  to fd00::212:4b00:17ae:ee14 (lifetime: 420 seconds)
-links:fd00::212:4b00:17b0:fd61  to fd00::212:4b00:17b0:fb97 (lifetime: 540 seconds)
-links:fd00::212:4b00:17b0:fbb6  to fd00::212:4b00:17b0:fb97 (lifetime: 420 seconds)
-links : end of list
