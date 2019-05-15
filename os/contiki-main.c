@@ -64,6 +64,10 @@
 #define LOG_MODULE "Main"
 #define LOG_LEVEL LOG_LEVEL_MAIN
 /*---------------------------------------------------------------------------*/
+#ifdef SMOKE
+extern bool smokeflag;
+#endif
+
 int
 #if PLATFORM_MAIN_ACCEPTS_ARGS
 main(int argc, char **argv)
@@ -170,7 +174,14 @@ main(void)
       watchdog_periodic();
     } while(r > 0);
 
-    platform_idle();
+   #ifdef SMOKE
+    if(smokeflag)
+        {
+           platform_idle();
+        }
+   #else
+           platform_idle();
+   #endif
   }
 #endif
 
