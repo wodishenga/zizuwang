@@ -92,7 +92,13 @@ void
 rpl_timers_schedule_periodic_dis(void)
 {
   if(ctimer_expired(&dis_timer)) {
-    clock_time_t expiration_time = RPL_DIS_INTERVAL / 2 + (random_rand() % (RPL_DIS_INTERVAL));
+
+//这里设置dis的定时器
+#if RPL_CONF_DEFAULT_LEAF_ONLY
+	clock_time_t expiration_time = (3600 * CLOCK_SECOND);
+#else
+	clock_time_t expiration_time = RPL_DIS_INTERVAL / 2 + (random_rand() % (RPL_DIS_INTERVAL));
+#endif
     ctimer_set(&dis_timer, expiration_time, handle_dis_timer, NULL);
   }
 }
@@ -497,6 +503,8 @@ rpl_timers_schedule_leaving(void)
 void
 rpl_timers_init(void)
 {
+
+  rpl_icmp6_dis_output(NULL);
   ctimer_set(&periodic_timer, PERIODIC_DELAY, handle_periodic_timer, NULL);
   rpl_timers_schedule_periodic_dis();
 }
