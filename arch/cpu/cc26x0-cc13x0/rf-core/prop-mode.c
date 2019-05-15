@@ -169,7 +169,7 @@ static rfc_propRxOutput_t rx_stats;
 #endif
 /*---------------------------------------------------------------------------*/
 /* Select power table based on the frequency band */
-#if DOT_15_4G_FREQUENCY_BAND_ID==DOT_15_4G_FREQUENCY_BAND_470
+#if (DOT_15_4G_FREQUENCY_BAND_ID==DOT_15_4G_FREQUENCY_BAND_470 || DOT_15_4G_FREQUENCY_BAND_ID==DOT_15_4G_FREQUENCY_BAND_433)
 #define TX_POWER_DRIVER PROP_MODE_TX_POWER_431_527
 #else
 #define TX_POWER_DRIVER PROP_MODE_TX_POWER_779_930

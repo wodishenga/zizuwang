@@ -170,7 +170,9 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
 {
   int ret;
   int last_sent_ok = 0;
-
+#if RPL_CONF_DEFAULT_LEAF_ONLY
+  NETSTACK_RADIO.on();
+#endif
   packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
   packetbuf_set_attr(PACKETBUF_ATTR_MAC_ACK, 1);
 
@@ -248,8 +250,10 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
   if(ret == MAC_TX_OK) {
     last_sent_ok = 1;
   }
-
   packet_sent(n, q, ret, 1);
+#if RPL_CONF_DEFAULT_LEAF_ONLY
+  NETSTACK_RADIO.off();
+#endif
   return last_sent_ok;
 }
 /*---------------------------------------------------------------------------*/

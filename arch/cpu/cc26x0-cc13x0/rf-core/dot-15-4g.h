@@ -63,13 +63,13 @@
 #define DOT_15_4G_FREQUENCY_BAND_950     11 /* 950–958 (Japan) - 950 MHz band */
 #define DOT_15_4G_FREQUENCY_BAND_1427    12 /* 1427–1518 (US and Canada, non-contiguous) - 1427 MHz band */
 #define DOT_15_4G_FREQUENCY_BAND_2450    13 /* 2400–2483.5 2450 MHz band */
-#define DOT_15_4G_FREQUENCY_BAND_CUSTOM  14 /* For use with custom frequency band settings */
+#define DOT_15_4G_FREQUENCY_BAND_433     14 /* For use with custom frequency band settings */
 /*---------------------------------------------------------------------------*/
 /* Default band selection to band 4 - 863MHz */
 #ifdef DOT_15_4G_CONF_FREQUENCY_BAND_ID
 #define DOT_15_4G_FREQUENCY_BAND_ID DOT_15_4G_CONF_FREQUENCY_BAND_ID
 #else
-#define DOT_15_4G_FREQUENCY_BAND_ID DOT_15_4G_FREQUENCY_BAND_863
+#define DOT_15_4G_FREQUENCY_BAND_ID DOT_15_4G_FREQUENCY_BAND_433
 #endif
 /*---------------------------------------------------------------------------*/
 /*
@@ -129,7 +129,13 @@
 #define DOT_15_4G_CHAN0_FREQUENCY 951000
 #define PROP_MODE_CONF_LO_DIVIDER   0x05
 
-#elif DOT_15_4G_FREQUENCY_BAND_ID==DOT_15_4G_FREQUENCY_BAND_CUSTOM
+#elif DOT_15_4G_FREQUENCY_BAND_ID==DOT_15_4G_FREQUENCY_BAND_433
+#define DOT_15_4G_CHANNEL_MAX         32
+#define DOT_15_4G_CHANNEL_SPACING    200
+#define DOT_15_4G_CHAN0_FREQUENCY 433000
+#define PROP_MODE_CONF_LO_DIVIDER   0x0A
+#define SMARTRF_SETTINGS_CONF_BAND_OVERRIDES HW32_ARRAY_OVERRIDE(0x405C,1), \
+                                             (uint32_t)0x18000280,
 #ifndef DOT_15_4G_CHANNEL_MAX
 #error DOT_15_4G_CHANNEL_MAX must be manually set when using custom frequency band
 #endif
