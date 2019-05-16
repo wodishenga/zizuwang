@@ -196,6 +196,15 @@ u8 ChkSum8(u8 *sdata, u16 len)
 	return (u8)acc;
 }
 
+static void GPIO_init(void)
+{
+	ti_lib_ioc_pin_type_gpio_output(27);
+	GPIO_setDio(IOID_27);
+	ti_lib_ioc_pin_type_gpio_output(25);
+	GPIO_setDio(25);
+}
+
+
 /*SCL引脚中断函数*/
 static void Alarm_handler(gpio_hal_pin_mask_t pin_mask)
 {
@@ -517,6 +526,8 @@ PROCESS_THREAD(app_process, ev, data)
 	memcpy(mac_addr, &linkaddr_node_addr, 8);
 	/*注册SCL中断函数*/
 	SCLInterruptHandler();
+
+	GPIO_init();
 	u8 i = 0;
 	PROCESS_BEGIN(); 
   
