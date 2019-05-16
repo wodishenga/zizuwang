@@ -83,9 +83,6 @@ PROCESS(report_process, "report process");
 /*节点mac地址*/
 u8 mac_addr[8];
 
-/*mac层RSSI值*/
-extern signed char mac_rssi;
-
 /*电池电量*/
 u16 voltage = 0;
 
@@ -101,6 +98,8 @@ int warningSentCount = 0;
 
 /*是否告警*/
 extern bool warning; 
+/*是否恢复正常状态*/
+extern bool isNormal;
 
 /*一开始的状态为初始化上报*/
 u8 eventType  = DEVINIT;
@@ -174,9 +173,6 @@ static void GPIO_init(void)
 	/*测电池电压时候把DIO27设置成输出低电平，不测的时候设置输出高电平*/
 	ti_lib_ioc_pin_type_gpio_output(27);
 	GPIO_setDio(IOID_27);
-	ti_lib_ioc_pin_type_gpio_output(25);
-	GPIO_setDio(IOID_25);
-
 }
 /*内部寄存器读取电池电压*/
 static int getBatteryVoltage(void)
@@ -232,11 +228,6 @@ u16 protocolPackingFunc(u8 type)
 			MSG_S->Dataload[index++] = 0x00;
 			MSG_S->Dataload[index++] = (u8)Sensor.status;
 
-			/*信号强度*/
-			MSG_S->Dataload[index++] = 0xba;
-			MSG_S->Dataload[index++] = 0x01;
-			MSG_S->Dataload[index++] = mac_rssi;
-
 			/*电池电量*/
 			MSG_S->Dataload[index++] = 0xb1;
 			MSG_S->Dataload[index++] = 0x01;
@@ -290,6 +281,13 @@ void sensorEventHandler(void)
 	{
 		return;
 	}
+        /*告警清除*/
+        if(isNormal)
+        {
+                Sensor.status = 0;        //状态正常：0
+                eventType =  DEVALARM;     
+                isNormal = false;
+        }
 
 	/*发生告警*/
 	if(warning)
@@ -297,7 +295,7 @@ void sensorEventHandler(void)
 		Sensor.status = 1;       //告警状态
 		eventType = DEVALARM;    //命令单元置为主动告警
 		warningSentCount++;
-		if(warningSentCount > 5)  //每次告警最多发5次数据
+		if(warningSentCount > 3)  //每次告警最多发3次数据
 		{
 			eventType = NONE;
 		}
@@ -393,5 +391,6 @@ PROCESS_THREAD(report_process, ev, data)
 
 	PROCESS_END();
 }
+
 
 
