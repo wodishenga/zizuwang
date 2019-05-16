@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated - http://www.ti.com/
+ * Copyright (c) 2016, University of Bristol - http://www.bristol.ac.uk
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,84 +29,94 @@
  */
 /*---------------------------------------------------------------------------*/
 /**
- * \addtogroup launchpad-peripherals
+ * \addtogroup cc26xx-adc-sensor
  * @{
  *
  * \file
- *  LaunchPad-specific board initialisation driver
+ * Driver for the CC13xx/CC26xx ADC
  */
 /*---------------------------------------------------------------------------*/
 #include "contiki.h"
+#include "lib/sensors.h"
+#include "dev/adc-sensor.h"
+#include "sys/timer.h"
 #include "lpm.h"
+#include "dev/gpio-hal.h"
+#include "board.h"
 #include "ti-lib.h"
-#include "board-peripherals.h"
-#include "rf-core/rf-switch.h"
-
-#include <stdint.h>
-#include <string.h>
+#include "driverlib/aux_adc.h"
+#include "aux-ctrl.h"
+#include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
+#include "app.h"
 /*---------------------------------------------------------------------------*/
-static void
-wakeup_handler(void)
+ uint8_t adcChannel = ADC_COMPB_IN_AUXIO2;
+
+ aux_consumer_module_t adc_aux_pressure = {
+  .clocks = AUX_WUC_ADI_CLOCK | AUX_WUC_ANAIF_CLOCK | AUX_WUC_SMPH_CLOCK
+};
+/*---------------------------------------------------------------------------*/
+extern u16 voltage ;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void openADC(void)
 {
-  /* Turn on the PERIPH PD */
-  ti_lib_prcm_power_domain_on(PRCM_DOMAIN_PERIPH);
-  while(ti_lib_prcm_power_domain_status(PRCM_DOMAIN_PERIPH)
-        != PRCM_DOMAIN_POWER_ON);
+	aux_ctrl_register_consumer(&adc_aux_pressure);
+	
+	ti_lib_aux_adc_select_input(adcChannel);  
+
+    
 }
-/*---------------------------------------------------------------------------*/
-/*
- * Declare a data structure to register with LPM.
- * We don't care about what power mode we'll drop to, we don't care about
- * getting notified before deep sleep. All we need is to be notified when we
- * wake up so we can turn power domains back on
- */
-LPM_MODULE(launchpad_module, NULL, NULL, wakeup_handler, LPM_DOMAIN_NONE);
-/*---------------------------------------------------------------------------*/
-static void
-configure_unused_pins(void)
+
+void closeADC(void)
 {
-  uint32_t pins[] = BOARD_UNUSED_PINS;
+	ti_lib_aux_adc_disable();
 
-  uint32_t *pin;
-
-  for(pin = pins; *pin != IOID_UNUSED; pin++) {
-    ti_lib_ioc_pin_type_gpio_input(*pin);
-    ti_lib_ioc_io_port_pull_set(*pin, IOC_IOPULL_DOWN);
-  }
+	aux_ctrl_unregister_consumer(&adc_aux_pressure);
+	
+	ti_lib_ioc_pin_type_gpio_input(ADC_COMPB_IN_AUXIO2);
+	ti_lib_ioc_io_port_pull_set(ADC_COMPB_IN_AUXIO2, IOC_IOPULL_DOWN);
 }
-/*---------------------------------------------------------------------------*/
-void
-board_init()
+ int
+getWaterPressure(void)
 {
-  /* Disable global interrupts */
-  bool int_disabled = ti_lib_int_master_disable();
 
-  /* Turn on relevant PDs */
-  wakeup_handler();
+    static int val, adj_val,pressure;
+	aux_ctrl_register_consumer(&adc_aux_pressure);
+	
+	ti_lib_aux_adc_select_input(adcChannel);
 
-  /* Enable GPIO peripheral */
-  ti_lib_prcm_peripheral_run_enable(PRCM_PERIPH_GPIO);
+	ti_lib_aux_adc_enable_sync(AUXADC_REF_VDDS_REL, AUXADC_SAMPLE_TIME_21P3_US,
+								   AUXADC_TRIGGER_MANUAL);
 
-  /* Apply settings and wait for them to take effect */
-  ti_lib_prcm_load_set();
-  while(!ti_lib_prcm_load_get());
+    ti_lib_aux_adc_gen_manual_trigger();
+    val = ti_lib_aux_adc_read_fifo();
+	
+    adj_val = ti_lib_aux_adc_adjust_value_for_gain_and_offset(
+        val,
+        ti_lib_aux_adc_get_adjustment_gain(AUXADC_REF_VDDS_REL),
+        ti_lib_aux_adc_get_adjustment_offset(AUXADC_REF_VDDS_REL));
 
-  /* Make sure the external flash is in the lower power mode */
- // ext_flash_init(NULL);
+	//adj_mv = ti_lib_aux_adc_value_to_microvolts(AUXADC_FIXED_REF_VOLTAGE_NORMAL, adj_val);
+	
+  // printf("val = %d, adj_val = %d adj_mv=%d \n", val,adj_val,adj_mv);
 
-  lpm_register_module(&launchpad_module);
+   ti_lib_aux_adc_disable();
+   
+	   aux_ctrl_unregister_consumer(&adc_aux_pressure);
+	   
+	   ti_lib_ioc_pin_type_gpio_input(ADC_COMPB_IN_AUXIO2);
+	   ti_lib_ioc_io_port_pull_set(ADC_COMPB_IN_AUXIO2, IOC_IOPULL_DOWN);
 
-  /* For unsupported peripherals, select a default pin configuration */
-  configure_unused_pins();
+	
 
-  /* Initialise the RF switch if present */
-  rf_switch_init();
+	pressure = (adj_val*3600/4096);
+	//printf("pressure = %d\n", pressure);
 
-  /* Re-enable interrupt if initially enabled. */
-  if(!int_disabled) {
-    ti_lib_int_master_enable();
-  }
+    return pressure;
 }
-/*---------------------------------------------------------------------------*/
-/** @} */
+
+

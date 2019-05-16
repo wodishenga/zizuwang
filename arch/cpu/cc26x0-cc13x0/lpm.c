@@ -59,7 +59,12 @@
 LIST(modules_list);
 /*---------------------------------------------------------------------------*/
 /* PDs that may stay on in deep sleep */
+#ifdef ZDHM100
+#define LOCKABLE_DOMAINS  ((uint32_t)( PRCM_DOMAIN_PERIPH ))
+#else
 #define LOCKABLE_DOMAINS ((uint32_t)(PRCM_DOMAIN_SERIAL | PRCM_DOMAIN_PERIPH))
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*
  * Don't consider standby mode if the next AON RTC event is scheduled to fire

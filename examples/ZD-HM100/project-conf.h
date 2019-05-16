@@ -28,85 +28,43 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*---------------------------------------------------------------------------*/
-/**
- * \addtogroup launchpad-peripherals
- * @{
- *
- * \file
- *  LaunchPad-specific board initialisation driver
- */
-/*---------------------------------------------------------------------------*/
-#include "contiki.h"
-#include "lpm.h"
-#include "ti-lib.h"
-#include "board-peripherals.h"
-#include "rf-core/rf-switch.h"
+#ifndef PROJECT_CONF_H_
+#define PROJECT_CONF_H_
 
-#include <stdint.h>
-#include <string.h>
-#include <stdbool.h>
 /*---------------------------------------------------------------------------*/
-static void
-wakeup_handler(void)
-{
-  /* Turn on the PERIPH PD */
-  ti_lib_prcm_power_domain_on(PRCM_DOMAIN_PERIPH);
-  while(ti_lib_prcm_power_domain_status(PRCM_DOMAIN_PERIPH)
-        != PRCM_DOMAIN_POWER_ON);
-}
+/* Change to match your configuration */
+#define IEEE802154_CONF_PANID            0x3333
+#define IEEE802154_CONF_DEFAULT_CHANNEL      0
+
+#define RPL_CONF_DEFAULT_LIFETIME 60
 /*---------------------------------------------------------------------------*/
+/* Enable the ROM bootloader */
+#define CCXXWARE_CONF_ROM_BOOTLOADER_ENABLE   1
+/*---------------------------------------------------------------------------*/
+/* For very sleepy operation */
+#define RF_BLE_CONF_ENABLED                   0
+#define UIP_DS6_CONF_PERIOD        CLOCK_SECOND
+#define UIP_CONF_TCP                          0
+#define RPL_CONF_DEFAULT_LEAF_ONLY            1
+
+#define LOG_CONF_WITH_LOC 1
+
+#define ZDHM100
 /*
- * Declare a data structure to register with LPM.
- * We don't care about what power mode we'll drop to, we don't care about
- * getting notified before deep sleep. All we need is to be notified when we
- * wake up so we can turn power domains back on
+#define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_TCPIP                       LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_IPV6                        LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_6LOWPAN                     LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_MAC                         LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_FRAMER                      LOG_LEVEL_INFO
  */
-LPM_MODULE(launchpad_module, NULL, NULL, wakeup_handler, LPM_DOMAIN_NONE);
+
+/*
+ * We'll fail without RPL probing, so turn it on explicitly even though it's
+ * on by default
+ */
+#define RPL_CONF_WITH_PROBING                 1
+#define RPL_CONF_WITH_DAO_ACK                 0
 /*---------------------------------------------------------------------------*/
-static void
-configure_unused_pins(void)
-{
-  uint32_t pins[] = BOARD_UNUSED_PINS;
-
-  uint32_t *pin;
-
-  for(pin = pins; *pin != IOID_UNUSED; pin++) {
-    ti_lib_ioc_pin_type_gpio_input(*pin);
-    ti_lib_ioc_io_port_pull_set(*pin, IOC_IOPULL_DOWN);
-  }
-}
+#endif /* PROJECT_CONF_H_ */
 /*---------------------------------------------------------------------------*/
-void
-board_init()
-{
-  /* Disable global interrupts */
-  bool int_disabled = ti_lib_int_master_disable();
-
-  /* Turn on relevant PDs */
-  wakeup_handler();
-
-  /* Enable GPIO peripheral */
-  ti_lib_prcm_peripheral_run_enable(PRCM_PERIPH_GPIO);
-
-  /* Apply settings and wait for them to take effect */
-  ti_lib_prcm_load_set();
-  while(!ti_lib_prcm_load_get());
-
-  /* Make sure the external flash is in the lower power mode */
- // ext_flash_init(NULL);
-
-  lpm_register_module(&launchpad_module);
-
-  /* For unsupported peripherals, select a default pin configuration */
-  configure_unused_pins();
-
-  /* Initialise the RF switch if present */
-  rf_switch_init();
-
-  /* Re-enable interrupt if initially enabled. */
-  if(!int_disabled) {
-    ti_lib_int_master_enable();
-  }
-}
-/*---------------------------------------------------------------------------*/
-/** @} */
