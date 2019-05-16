@@ -328,6 +328,10 @@ u16 protocolPackingFunc(u8 type)
 		MSG_S->Dataload[index++] = 0x16;
 		MSG_S->Dataload[index++] = 0x00;
 		MSG_S->Dataload[index++] = (u8)Smk_status;
+		/*信号强度*/
+                MSG_S->Dataload[index++] = 0xba;
+                MSG_S->Dataload[index++] = 0x01;
+                MSG_S->Dataload[index++] = mac_rssi;
 
 		length += index;
 		break;
