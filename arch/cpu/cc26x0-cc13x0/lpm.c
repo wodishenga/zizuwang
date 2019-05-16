@@ -59,8 +59,11 @@
 LIST(modules_list);
 /*---------------------------------------------------------------------------*/
 /* PDs that may stay on in deep sleep */
-//#define LOCKABLE_DOMAINS ((uint32_t)(PRCM_DOMAIN_SERIAL | PRCM_DOMAIN_PERIPH))
-#define LOCKABLE_DOMAINS  ((uint32_t)( PRCM_DOMAIN_PERIPH | PRCM_DOMAIN_SYSBUS |PRCM_DOMAIN_VIMS ))
+#ifdef ZDHM100
+#define LOCKABLE_DOMAINS  ((uint32_t)( PRCM_DOMAIN_PERIPH ))
+#else
+#define LOCKABLE_DOMAINS ((uint32_t)(PRCM_DOMAIN_SERIAL | PRCM_DOMAIN_PERIPH))
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*

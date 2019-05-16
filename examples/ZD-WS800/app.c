@@ -313,6 +313,8 @@ static void GPIO_init(void)
 	/*测电池电压时候把DIO27设置成输出低电平，不测的时候设置输出高电平*/
 	ti_lib_ioc_pin_type_gpio_output(27);
 	GPIO_setDio(IOID_27);
+	ti_lib_ioc_pin_type_gpio_output(26);
+    GPIO_setDio(IOID_26);
 	/*测水压电压的是DIO28，需要测的时候要使能DIO1高电平，打开到压力变送器的电源，其他时候DIO1低电平*/
 	ti_lib_ioc_pin_type_gpio_output(1);
 	ti_lib_gpio_clear_dio(1);

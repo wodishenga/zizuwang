@@ -49,7 +49,8 @@
 //#define RPL_CONF_LEAF_ONLY                    1
 #define LOG_CONF_WITH_LOC 1
 
-#define SMOKE
+/*定义宏在有I2C中断时不让cpu进入低功耗模式*/
+#define ZDGY100
 
 
 /*#define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_INFO

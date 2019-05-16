@@ -49,6 +49,7 @@
 
 #define LOG_CONF_WITH_LOC 1
 
+#define ZDHM100
 /*
 #define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_INFO
 #define LOG_CONF_LEVEL_TCPIP                       LOG_LEVEL_INFO

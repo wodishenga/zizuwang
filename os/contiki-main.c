@@ -64,7 +64,7 @@
 #define LOG_MODULE "Main"
 #define LOG_LEVEL LOG_LEVEL_MAIN
 /*---------------------------------------------------------------------------*/
-#ifdef SMOKE
+#ifdef ZDGY100
 extern bool smokeflag;
 #endif
 
@@ -174,7 +174,7 @@ main(void)
       watchdog_periodic();
     } while(r > 0);
 
-   #ifdef SMOKE
+   #ifdef ZDGY100
     if(smokeflag)
         {
            platform_idle();

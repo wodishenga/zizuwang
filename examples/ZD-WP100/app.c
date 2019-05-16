@@ -174,6 +174,9 @@ static void GPIO_init(void)
 	/*测电池电压时候把DIO27设置成输出低电平，不测的时候设置输出高电平*/
 	ti_lib_ioc_pin_type_gpio_output(27);
 	GPIO_setDio(IOID_27);
+	ti_lib_ioc_pin_type_gpio_output(25);
+	GPIO_setDio(IOID_25);
+
 }
 /*内部寄存器读取电池电压*/
 static int getBatteryVoltage(void)
