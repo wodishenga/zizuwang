@@ -464,7 +464,7 @@ void sensorEventHandler(void)
 
 	if (smk.status.fire)
 	{
-		if (++smk_fire_cnt > 20)
+		if (++smk_fire_cnt > 60)
 		{
 			smk_fire_cnt = 0;
 			smk.status.fire = false;
@@ -474,7 +474,7 @@ void sensorEventHandler(void)
 
 	if (smk.status.chek)
 	{
-		if (++smk_check_cnt > 20)
+		if (++smk_check_cnt > 60)
 		{
 			smk_check_cnt = 0;
 			smk.status.chek = false;
