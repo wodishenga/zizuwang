@@ -1,28 +1,42 @@
-# Contiki-NG: The OS for Next Generation IoT Devices
+# 壹物联自组网版本说明
+- 版本号：1.0  
+- 日期：2019/05/17  
+## 新增
+### 新增PA驱动
+### 添加PA支持到SLIP-RADIO
+### 新增pa-router例程
+### 新增低功耗叶子节点入网前低功耗设计
+- 上电后主动发DIS搜索网络
+- DIS间隔修改为1小时
+### 新增ZD-ER100
+- 在原有rpl-borter-router基础上开发
+- 新增MQTT支持，依赖paho.mqtt.c
+- 新增壹物联D协议  
+- 网络拓扑全上报
+- 网络拓扑变更上报
+### 新增ZD-GY100
+- 低功耗烟雾探测器例程
+- 固件版本：1.0
+- 版本日期：2019/5/16
+- 1.每天检测并且上报一次电池电量
 
-[![Build Status](https://travis-ci.org/contiki-ng/contiki-ng.svg?branch=master)](https://travis-ci.org/contiki-ng/contiki-ng/branches)
-[![license](https://img.shields.io/badge/license-3--clause%20bsd-brightgreen.svg)](https://github.com/contiki-ng/contiki-ng/blob/master/LICENSE.md)
-[![Latest release](https://img.shields.io/github/release/contiki-ng/contiki-ng.svg)](https://github.com/contiki-ng/contiki-ng/releases/latest)
-[![GitHub Release Date](https://img.shields.io/github/release-date/contiki-ng/contiki-ng.svg)](https://github.com/contiki-ng/contiki-ng/releases/latest)
-[![Last commit](https://img.shields.io/github/last-commit/contiki-ng/contiki-ng.svg)](https://github.com/contiki-ng/contiki-ng/commit/HEAD)
+### 新增ZD-HM100
+- 低功耗温湿度传感器例程
+- 固件版本: 1.0
+- 版本日期：2019/5/16
+- 1.每小时上报一次温湿度
+- 2.每天检测并且上报一次电池电量
 
-Contiki-NG is an open-source, cross-platform operating system for Next-Generation IoT devices. It focuses on dependable (secure and reliable) low-power communication and standard protocols, such as IPv6/6LoWPAN, 6TiSCH, RPL, and CoAP. Contiki-NG comes with extensive documentation, tutorials, a roadmap, release cycle, and well-defined development flow for smooth integration of community contributions.
+### 新增ZD-WP100
+- 低功耗水浸传感器例程
+- 固件版本: 1.0
+- 版本日期：2019/5/16
+- 1.每天检测并且上报一次电池电量
 
-Unless explicitly stated otherwise, Contiki-NG sources are distributed under
-the terms of the [3-clause BSD license](LICENSE.md). This license gives
-everyone the right to use and distribute the code, either in binary or
-source code format, as long as the copyright license is retained in
-the source code.
-
-Contiki-NG started as a fork of the Contiki OS and retains some of its original features.
-
-Find out more:
-
-* GitHub repository: https://github.com/contiki-ng/contiki-ng
-* Documentation: https://github.com/contiki-ng/contiki-ng/wiki
-* Web site: http://contiki-ng.org
-
-Engage with the community:
-
-* Gitter: https://gitter.im/contiki-ng
-* Twitter: https://twitter.com/contiki_ng
+### 新增ZD-WS100
+- 低功耗水压传感器例程
+- 日期：2019/5/16
+- 固件版本：1.0
+- 1.两分钟检测一次水压
+- 2.没入网前闪蓝灯,检测时闪绿灯，电池大于3v时上报数据闪蓝灯，低于3v闪红灯
+- 3.低压下限：0.02mpa，高压上限：1.2mpa
