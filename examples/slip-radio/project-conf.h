@@ -44,5 +44,12 @@
 #define NETSTACK_CONF_NETWORK slipnet_driver
 
 #define NETSTACK_CONF_FRAMER no_framer
+/*
+#define PA_CONF_ENABLE 1
+*/
+#if PA_CONF_ENABLE
+#define RF_CORE_CONF_PROP_FRONT_END_MODE 2
+#define RF_CORE_CONF_PROP_BIAS_MODE 1
+#endif
 /*---------------------------------------------------------------------------*/
 #endif /* PROJECT_CONF_H_ */
