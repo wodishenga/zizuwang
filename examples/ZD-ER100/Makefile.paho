@@ -1,0 +1,37 @@
+TARGET_LIBFILES += -lpthread -ldl -lpaho-mqtt3c
+CPATH += ../../paho.mqtt.c/src
+PSRTPATH += ../../paho.mqtt.c/src
+PROJECTDIRS += $(PSRTPATH)
+PROJECTDIRS += $(CPATH)
+PROJECTDIRS += ../../paho.mqtt.c/build
+
+PROJECTDIRS += ../../contiki/examples/rpl-border-router
+
+CONTIKI_SOURCEFILES += MQTTClient.c
+CONTIKI_SOURCEFILES += Base64.c        
+CONTIKI_SOURCEFILES += MQTTVersion.c
+CONTIKI_SOURCEFILES += MQTTAsync.c
+CONTIKI_SOURCEFILES += StackTrace.c
+CONTIKI_SOURCEFILES += Clients.c   
+CONTIKI_SOURCEFILES += MQTTProperties.c          
+CONTIKI_SOURCEFILES += OsWrapper.c
+CONTIKI_SOURCEFILES += MQTTClient.c
+CONTIKI_SOURCEFILES += Thread.c   
+CONTIKI_SOURCEFILES += MQTTProtocolClient.c
+CONTIKI_SOURCEFILES += Heap.c   
+CONTIKI_SOURCEFILES += SHA1.c          
+CONTIKI_SOURCEFILES += Tree.c
+CONTIKI_SOURCEFILES += MQTTPacket.c
+CONTIKI_SOURCEFILES += LinkedList.c
+CONTIKI_SOURCEFILES += MQTTProtocolOut.c         
+CONTIKI_SOURCEFILES += SocketBuffer.c  
+CONTIKI_SOURCEFILES += utf-8.c
+CONTIKI_SOURCEFILES += MQTTPacketOut.c
+CONTIKI_SOURCEFILES += Log.c         
+CONTIKI_SOURCEFILES += MQTTReasonCodes.c         
+CONTIKI_SOURCEFILES += Socket.c
+CONTIKI_SOURCEFILES += MQTTPersistence.c
+CONTIKI_SOURCEFILES += WebSocket.c
+CONTIKI_SOURCEFILES += Messages.c      
+CONTIKI_SOURCEFILES += MQTTPersistenceDefault.c      
+CONTIKI_SOURCEFILES += SSLSocket.c

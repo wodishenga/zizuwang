@@ -67,6 +67,31 @@ static void dis_input(void);
 static void dio_input(void);
 static void dao_input(void);
 
+//todo
+//author: fanleung
+//入网前的降低功耗
+#if RPL_CONF_DEFAULT_LEAF_ONLY
+
+#define WAIT_FOR_DIO_TIME    CLOCK_SECOND * 10
+extern void start_all_process(void);
+extern void stop_all_process(void);
+static struct ctimer DIO_CheckTimer;
+static bool IsReceivedDIO = false;
+static void DIO_CheckTimer_timeout_callback(void *ptr)
+{
+	if(IsReceivedDIO == false){
+		stop_all_process();
+		printf("没有收到dio,关掉所有进程\r\n");
+		NETSTACK_MAC.off();
+	}
+}
+
+#endif
+
+
+
+
+
 /*---------------------------------------------------------------------------*/
 /* Initialize RPL ICMPv6 message handlers */
 UIP_ICMP6_HANDLER(dis_handler, ICMP6_RPL, RPL_CODE_DIS, dis_input);
@@ -159,6 +184,15 @@ rpl_icmp6_dis_output(uip_ipaddr_t *addr)
 
   if(addr == NULL) {
     addr = &rpl_multicast_addr;
+
+#if RPL_CONF_DEFAULT_LEAF_ONLY
+    printf("发送dis...\r\n");
+    IsReceivedDIO = false;
+	start_all_process();
+	ctimer_set(&DIO_CheckTimer, WAIT_FOR_DIO_TIME,
+		  DIO_CheckTimer_timeout_callback, NULL);
+#endif
+
   }
 
   LOG_INFO("sending a DIS to ");
@@ -311,6 +345,10 @@ dio_input(void)
         goto discard;
     }
   }
+
+#if RPL_CONF_DEFAULT_LEAF_ONLY
+  IsReceivedDIO = true;
+#endif
 
   LOG_INFO("received a %s-DIO from ",
       uip_is_addr_mcast(&UIP_IP_BUF->destipaddr) ? "multicast" : "unicast");

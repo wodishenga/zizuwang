@@ -15,7 +15,7 @@
 *.hex 
 *.elf 
 *.a 
-
+*.vscode
 # Packages #  
 ############  
 # it's better to unpack these files and commit the raw source  
@@ -28,8 +28,9 @@
 *.rar  
 *.tar  
 *.zip    
-
-
+*.map
+*.cc26x0-cc13x0
+*.native
 # Logs and databases #  
 ######################  
 *.log  

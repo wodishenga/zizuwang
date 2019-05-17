@@ -57,6 +57,7 @@
 #define LOG_MODULE "CSMA"
 #define LOG_LEVEL LOG_LEVEL_MAC
 
+signed char mac_rssi = 0;
 /* Constants of the IEEE 802.15.4 standard */
 
 /* macMinBE: Initial backoff exponent. Range 0--CSMA_MAX_BE */
@@ -173,6 +174,7 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
 #if RPL_CONF_DEFAULT_LEAF_ONLY
   NETSTACK_RADIO.on();
 #endif
+
   packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
   packetbuf_set_attr(PACKETBUF_ATTR_MAC_ACK, 1);
 
@@ -230,6 +232,7 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
               if(len == CSMA_ACK_LEN && ackbuf[2] == dsn) {
                 /* Ack received */
                 ret = MAC_TX_OK;
+		mac_rssi = (signed char )packetbuf_attr(PACKETBUF_ATTR_RSSI);
               } else {
                 /* Not an ack or ack not for us: collision */
                 ret = MAC_TX_COLLISION;
@@ -250,9 +253,10 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
   if(ret == MAC_TX_OK) {
     last_sent_ok = 1;
   }
+
   packet_sent(n, q, ret, 1);
 #if RPL_CONF_DEFAULT_LEAF_ONLY
-  NETSTACK_RADIO.off();
+    NETSTACK_RADIO.off();
 #endif
   return last_sent_ok;
 }

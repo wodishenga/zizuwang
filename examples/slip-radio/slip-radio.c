@@ -48,7 +48,9 @@
 #include "os/sys/log.h"
 
 #include <stdio.h>
-
+#if PA_CONF_ENABLE
+#include "pa/pa.h"
+#endif
 #define LOG_MODULE "slip-radio"
 #define LOG_LEVEL LOG_LEVEL_NONE
 /*---------------------------------------------------------------------------*/
@@ -255,7 +257,10 @@ PROCESS_THREAD(slip_radio_process, ev, data)
   SLIP_RADIO_CONF_SENSORS.init();
 #endif
   LOG_INFO("Slip Radio started\n");
-
+#if PA_CONF_ENABLE
+  init_pa();
+  pa_set_radio_rx();
+#endif
   etimer_set(&et, CLOCK_SECOND * 3);
 
   while(1) {
