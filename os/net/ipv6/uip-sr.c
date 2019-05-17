@@ -45,7 +45,9 @@
 #include "net/routing/routing.h"
 #include "lib/list.h"
 #include "lib/memb.h"
-
+#if BUILD_WITH_RPL_BORDER_ROUTER
+#include "protocol.h"
+#endif
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "IPv6 SR"
@@ -59,8 +61,7 @@ LIST(nodelist);
 MEMB(nodememb, uip_sr_node_t, UIP_SR_LINK_NUM);
 
 /*---------------------------------------------------------------------------*/
-int
-uip_sr_num_nodes(void)
+int uip_sr_num_nodes(void)
 {
   return num_nodes;
 }
@@ -68,9 +69,12 @@ uip_sr_num_nodes(void)
 static int
 node_matches_address(void *graph, const uip_sr_node_t *node, const uip_ipaddr_t *addr)
 {
-  if(node == NULL || addr == NULL || graph != node->graph) {
+  if (node == NULL || addr == NULL || graph != node->graph)
+  {
     return 0;
-  } else {
+  }
+  else
+  {
     uip_ipaddr_t node_ipaddr;
     NETSTACK_ROUTING.get_sr_node_ipaddr(&node_ipaddr, node);
     return uip_ipaddr_cmp(&node_ipaddr, addr);
@@ -81,17 +85,18 @@ uip_sr_node_t *
 uip_sr_get_node(void *graph, const uip_ipaddr_t *addr)
 {
   uip_sr_node_t *l;
-  for(l = list_head(nodelist); l != NULL; l = list_item_next(l)) {
+  for (l = list_head(nodelist); l != NULL; l = list_item_next(l))
+  {
     /* Compare prefix and node identifier */
-    if(node_matches_address(graph, l, addr)) {
+    if (node_matches_address(graph, l, addr))
+    {
       return l;
     }
   }
   return NULL;
 }
 /*---------------------------------------------------------------------------*/
-int
-uip_sr_is_addr_reachable(void *graph, const uip_ipaddr_t *addr)
+int uip_sr_is_addr_reachable(void *graph, const uip_ipaddr_t *addr)
 {
   int max_depth = UIP_SR_LINK_NUM;
   uip_ipaddr_t root_ipaddr;
@@ -102,19 +107,20 @@ uip_sr_is_addr_reachable(void *graph, const uip_ipaddr_t *addr)
   node = uip_sr_get_node(graph, addr);
   root_node = uip_sr_get_node(graph, &root_ipaddr);
 
-  while(node != NULL && node != root_node && max_depth > 0) {
+  while (node != NULL && node != root_node && max_depth > 0)
+  {
     node = node->parent;
     max_depth--;
   }
   return node != NULL && node == root_node;
 }
 /*---------------------------------------------------------------------------*/
-void
-uip_sr_expire_parent(void *graph, const uip_ipaddr_t *child, const uip_ipaddr_t *parent)
+void uip_sr_expire_parent(void *graph, const uip_ipaddr_t *child, const uip_ipaddr_t *parent)
 {
   uip_sr_node_t *l = uip_sr_get_node(graph, child);
   /* Check if parent matches */
-  if(l != NULL && node_matches_address(graph, l->parent, parent)) {
+  if (l != NULL && node_matches_address(graph, l->parent, parent))
+  {
     l->lifetime = UIP_SR_REMOVAL_DELAY;
   }
 }
@@ -126,11 +132,14 @@ uip_sr_update_node(void *graph, const uip_ipaddr_t *child, const uip_ipaddr_t *p
   uip_sr_node_t *parent_node = uip_sr_get_node(graph, parent);
   uip_sr_node_t *old_parent_node;
 
-  if(parent != NULL) {
+  if (parent != NULL)
+  {
     /* No node for the parent, add one with infinite lifetime */
-    if(parent_node == NULL) {
+    if (parent_node == NULL)
+    {
       parent_node = uip_sr_update_node(graph, parent, NULL, UIP_SR_INFINITE_LIFETIME);
-      if(parent_node == NULL) {
+      if (parent_node == NULL)
+      {
         LOG_ERR("NS: no space left for root node!\n");
         return NULL;
       }
@@ -138,10 +147,12 @@ uip_sr_update_node(void *graph, const uip_ipaddr_t *child, const uip_ipaddr_t *p
   }
 
   /* No node for this child, add one */
-  if(child_node == NULL) {
+  if (child_node == NULL)
+  {
     child_node = memb_alloc(&nodememb);
     /* No space left, abort */
-    if(child_node == NULL) {
+    if (child_node == NULL)
+    {
       LOG_ERR("NS: no space left for child ");
       LOG_ERR_6ADDR(child);
       LOG_ERR_("\n");
@@ -150,6 +161,37 @@ uip_sr_update_node(void *graph, const uip_ipaddr_t *child, const uip_ipaddr_t *p
     child_node->parent = NULL;
     list_add(nodelist, child_node);
     num_nodes++;
+/*新增上报*/
+#if BUILD_WITH_RPL_BORDER_ROUTER && CHANGED_REPORT
+  if (parent != NULL)
+  {
+    printf("add node report:");
+    static uint8_t mac_addr[9] = {0};
+    static uint8_t status[1] = {0x01};
+    fill_msg(status, 1, 0);
+    mac_addr[0] = 0x01;
+    uint8_t i = 0;
+    for (i = 0; i < 8; i++)
+      mac_addr[i + 1] = child->u8[i + 8];
+    if (mac_addr[1] & 0x02)
+      mac_addr[1] &= ~0x02;
+    else
+      mac_addr[1] |= 0x02;
+    for(uint8_t i = 0;i < 9;i++)
+    printf("%02x",mac_addr[i]);
+    printf("\n");
+    fill_msg(&mac_addr[0], 9, 0);
+    for (i = 0; i < 8; i++)
+      mac_addr[i + 1] = parent->u8[i + 8];
+    if (mac_addr[1] & 0x02)
+      mac_addr[1] &= ~0x02;
+    else
+      mac_addr[1] |= 0x02;
+    mac_addr[0] = 0x01;
+    fill_msg(&mac_addr[0], 9, 1);
+  }
+#endif
+/*end*/
   }
 
   /* Initialize node */
@@ -158,32 +200,33 @@ uip_sr_update_node(void *graph, const uip_ipaddr_t *child, const uip_ipaddr_t *p
   memcpy(child_node->link_identifier, ((const unsigned char *)child) + 8, 8);
 
   /* Is the node reachable before the update? */
-  if(uip_sr_is_addr_reachable(graph, child)) {
+  if (uip_sr_is_addr_reachable(graph, child))
+  {
     old_parent_node = child_node->parent;
     /* Update node */
     child_node->parent = parent_node;
     /* Has the node become unreachable? May happen if we create a loop. */
-    if(!uip_sr_is_addr_reachable(graph, child)) {
+    if (!uip_sr_is_addr_reachable(graph, child))
+    {
       /* The new parent makes the node unreachable, restore old parent.
        * We will take the update next time, with chances we know more of
        * the topology and the loop is gone. */
       child_node->parent = old_parent_node;
     }
-  } else {
+  }
+  else
+  {
     child_node->parent = parent_node;
   }
-
-  LOG_INFO("NS: updating link, child ");
+  LOG_INFO_("NS: updating link, child ");
   LOG_INFO_6ADDR(child);
   LOG_INFO_(", parent ");
   LOG_INFO_6ADDR(parent);
   LOG_INFO_(", lifetime %u, num_nodes %u\n", (unsigned)lifetime, num_nodes);
-
   return child_node;
 }
 /*---------------------------------------------------------------------------*/
-void
-uip_sr_init(void)
+void uip_sr_init(void)
 {
   num_nodes = 0;
   memb_init(&nodememb);
@@ -202,45 +245,75 @@ uip_sr_node_next(uip_sr_node_t *item)
   return list_item_next(item);
 }
 /*---------------------------------------------------------------------------*/
-void
-uip_sr_periodic(unsigned seconds)
+void uip_sr_periodic(unsigned seconds)
 {
   uip_sr_node_t *l;
   uip_sr_node_t *next;
 
   /* First pass, for all expired nodes, deallocate them iff no child points to them */
-  for(l = list_head(nodelist); l != NULL; l = next) {
+  for (l = list_head(nodelist); l != NULL; l = next)
+  {
     next = list_item_next(l);
-    if(l->lifetime == 0) {
+    if (l->lifetime == 0)
+    {
       uip_sr_node_t *l2;
-      for(l2 = list_head(nodelist); l2 != NULL; l2 = list_item_next(l2)) {
-        if(l2->parent == l) {
+      for (l2 = list_head(nodelist); l2 != NULL; l2 = list_item_next(l2))
+      {
+        if (l2->parent == l)
+        {
           break;
         }
       }
-      if(LOG_INFO_ENABLED) {
+      if (LOG_INFO_ENABLED)
+      {
         uip_ipaddr_t node_addr;
         NETSTACK_ROUTING.get_sr_node_ipaddr(&node_addr, l);
-        LOG_INFO("NS: removing expired node ");
+        LOG_INFO_("NS: removing expired node ");
         LOG_INFO_6ADDR(&node_addr);
         LOG_INFO_("\n");
       }
       /* No child found, deallocate node */
+      /*掉线上报*/
+#if BUILD_WITH_RPL_BORDER_ROUTER && CHANGED_REPORT
+      printf("deallocate node report");
+      uip_ipaddr_t node_addr;
+      NETSTACK_ROUTING.get_sr_node_ipaddr(&node_addr, l);
+      report_disconnect(&node_addr);
+      static uint8_t mac_addr[9] = {0};
+      static uint8_t status[1] = {0x02};
+      NETSTACK_ROUTING.get_sr_node_ipaddr(&node_addr, l);
+      fill_msg((uint8_t *)&status, 1, 0);
+      mac_addr[0] = 0x01;
+      uint8_t i = 0;
+      for (i = 0; i < 8; i++)
+        mac_addr[i + 1] = node_addr.u8[i + 8];
+      if (mac_addr[1] & 0x02)
+        mac_addr[1] &= ~0x02;
+      else
+        mac_addr[1] |= 0x02;
+      for(uint8_t i = 0;i < 9;i++)
+      printf("%02x",mac_addr[i]);
+      printf("\n");
+      fill_msg(&mac_addr[0], 9, 1);
+#endif
+      /*END*/
       list_remove(nodelist, l);
       memb_free(&nodememb, l);
       num_nodes--;
-    } else if(l->lifetime != UIP_SR_INFINITE_LIFETIME) {
+    }
+    else if (l->lifetime != UIP_SR_INFINITE_LIFETIME)
+    {
       l->lifetime = l->lifetime > seconds ? l->lifetime - seconds : 0;
     }
   }
 }
 /*---------------------------------------------------------------------------*/
-void
-uip_sr_free_all(void)
+void uip_sr_free_all(void)
 {
   uip_sr_node_t *l;
   uip_sr_node_t *next;
-  for(l = list_head(nodelist); l != NULL; l = next) {
+  for (l = list_head(nodelist); l != NULL; l = next)
+  {
     next = list_item_next(l);
     list_remove(nodelist, l);
     memb_free(&nodememb, l);
@@ -248,8 +321,7 @@ uip_sr_free_all(void)
   }
 }
 /*---------------------------------------------------------------------------*/
-int
-uip_sr_link_snprint(char *buf, int buflen, uip_sr_node_t *link)
+int uip_sr_link_snprint(char *buf, int buflen, uip_sr_node_t *link)
 {
   int index = 0;
   uip_ipaddr_t child_ipaddr;
@@ -258,43 +330,61 @@ uip_sr_link_snprint(char *buf, int buflen, uip_sr_node_t *link)
   NETSTACK_ROUTING.get_sr_node_ipaddr(&child_ipaddr, link);
   NETSTACK_ROUTING.get_sr_node_ipaddr(&parent_ipaddr, link->parent);
 
-  if(LOG_WITH_COMPACT_ADDR) {
-    index += log_6addr_compact_snprint(buf+index, buflen-index, &child_ipaddr);
-  } else {
-    index += uiplib_ipaddr_snprint(buf+index, buflen-index, &child_ipaddr);
+  if (LOG_WITH_COMPACT_ADDR)
+  {
+    index += log_6addr_compact_snprint(buf + index, buflen - index, &child_ipaddr);
   }
-  if(index >= buflen) {
+  else
+  {
+    index += uiplib_ipaddr_snprint(buf + index, buflen - index, &child_ipaddr);
+  }
+  if (index >= buflen)
+  {
     return index;
   }
 
-  if(link->parent == NULL) {
-    index += snprintf(buf+index, buflen-index, "  (DODAG root)");
-    if(index >= buflen) {
-      return index;
-    }
-  } else {
-    index += snprintf(buf+index, buflen-index, "  to ");
-    if(index >= buflen) {
-      return index;
-    }
-    if(LOG_WITH_COMPACT_ADDR) {
-      index += log_6addr_compact_snprint(buf+index, buflen-index, &parent_ipaddr);
-    } else {
-      index += uiplib_ipaddr_snprint(buf+index, buflen-index, &parent_ipaddr);
-    }
-    if(index >= buflen) {
+  if (link->parent == NULL)
+  {
+    index += snprintf(buf + index, buflen - index, "  (DODAG root)");
+    if (index >= buflen)
+    {
       return index;
     }
   }
-  if(link->lifetime != UIP_SR_INFINITE_LIFETIME) {
-    index += snprintf(buf+index, buflen-index,
-              " (lifetime: %lu seconds)", (unsigned long)link->lifetime);
-    if(index >= buflen) {
+  else
+  {
+    index += snprintf(buf + index, buflen - index, "  to ");
+    if (index >= buflen)
+    {
       return index;
     }
-  } else {
-    index += snprintf(buf+index, buflen-index, " (lifetime: infinite)");
-    if(index >= buflen) {
+    if (LOG_WITH_COMPACT_ADDR)
+    {
+      index += log_6addr_compact_snprint(buf + index, buflen - index, &parent_ipaddr);
+    }
+    else
+    {
+      index += uiplib_ipaddr_snprint(buf + index, buflen - index, &parent_ipaddr);
+    }
+    if (index >= buflen)
+    {
+      return index;
+    }
+  }
+  if (link->lifetime != UIP_SR_INFINITE_LIFETIME)
+  {
+    index += snprintf(buf + index, buflen - index,
+                      " (lifetime: %lu seconds)", (unsigned long)link->lifetime);
+    if (index >= buflen)
+    {
+      return index;
+    }
+  }
+  else
+  {
+    index += snprintf(buf + index, buflen - index, " (lifetime: infinite)");
+    if (index >= buflen)
+    {
       return index;
     }
   }
